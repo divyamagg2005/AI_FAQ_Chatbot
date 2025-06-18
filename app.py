@@ -30,12 +30,14 @@ def type_text_with_cursor(text: str, delay: float = 0.01):
         container.markdown(f"<div class='typed-text'>{typed}</div>", unsafe_allow_html=True)
         time.sleep(delay)
 
-# --- Load environment variables ---
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"), override=True)
+# --- Load API key (works locally and on Streamlit Cloud) ---
+load_dotenv(dotenv_path=os.path.join(os.path.dirname(__file__), ".env"), override=True)  # still useful for local dev
 
-# Debug check for API key
-if not os.getenv("GOOGLE_API_KEY"):
-    st.warning("GOOGLE_API_KEY not found. Please check your .env file.")
+GOOGLE_API_KEY = st.secrets.get("GOOGLE_API_KEY") or os.getenv("GOOGLE_API_KEY")
+if GOOGLE_API_KEY:
+    os.environ["GOOGLE_API_KEY"] = GOOGLE_API_KEY  # ensure downstream libraries can access it
+else:
+    st.error("GOOGLE_API_KEY not found in st.secrets or .env. Please add it before using the app.")
 
 def process_pdf(pdf_file):
     """Extract text from a PDF file."""
